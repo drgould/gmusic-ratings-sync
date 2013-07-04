@@ -18,6 +18,7 @@ Follow the prompts:
     iTunes library XML file:
     Only sync ratings for songs that are unrated in Google Music (y/n)?
 
+Then let it do its thing.
 That's it!
 
 
