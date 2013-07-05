@@ -18,6 +18,7 @@
 """
 __author__ = 'Derek Gould'
 
+from gmusicapi.exceptions import CallFailure
 from gmusicapi import Webclient
 from bs4 import BeautifulSoup
 
@@ -74,9 +75,10 @@ class RatingsSync(object):
 
         try:
             api.login(self.email, self.password)
+            xml_file = open(self.xml_file)
 
             print "Parsing songs from iTunes XML file..."
-            itunes_song_list = self.__get_itunes_song_list(self.xml_file)
+            itunes_song_list = self.__get_itunes_song_list(xml_file)
             print "iTunes XML file parsing complete"
 
             print "Retrieving songs from Google Music..."
@@ -92,8 +94,10 @@ class RatingsSync(object):
             self.__sync_song_ratings(api, song_list)
             print "Song ratings sync complete!"
 
-        except:
+        except CallFailure:
             print "Error: Couldn't log in to Google Music!"
+        except IOError:
+            print "Error: iTunes XML file not found"
 
     def __get_gmusic_song_list(self, api):
         """
@@ -116,7 +120,7 @@ class RatingsSync(object):
         """
 
         print "\tLoading XML file... (this may take a minute or two)"
-        xml = BeautifulSoup(open(xml_file))
+        xml = BeautifulSoup(xml_file)
         print "\tXML file loaded"
 
         print "\tExtracting songs..."
@@ -209,7 +213,8 @@ class RatingsSync(object):
     def __get_intersection(self, gmusic_songs=[], itunes_songs=[], only_no_rating=False):
         """
         Gets the intersection of the two lists with differing ratings
-        Returns the intersection as a list of dictionaries containing the matched song dictionaries with different ratings
+        Returns the intersection as a list of dictionaries containing the matched song dictionaries with different
+        ratings
         """
 
         remaining_songs = itunes_songs
@@ -261,7 +266,7 @@ class RatingsSync(object):
 
     def __sync_song_ratings(self, api, songs):
         """
-        Blindly syncs rating from iTunes to Google Music
+        Sync ratings to Google Music
         """
 
         api.change_song_metadata(songs)
