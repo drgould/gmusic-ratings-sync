@@ -25,4 +25,4 @@ That's it!
 Requirements
 ------------
 -	[The Unofficial Google Music API](http://github.com/simon-weber/Unofficial-Google-Music-API) (pip install gmusicapi)
--	[BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/) (pip install BeautifulSoup)
+-	[BeautifulSoup 4](http://www.crummy.com/software/BeautifulSoup/) (pip install BeautifulSoup4)
