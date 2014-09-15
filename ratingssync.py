@@ -20,6 +20,7 @@ __author__ = 'Derek Gould'
 
 from gmusicapi.exceptions import CallFailure
 from gmusicapi import Webclient
+from gmusicapi import Mobileclient
 from bs4 import BeautifulSoup
 
 # iTunes uses a 100 point scale
@@ -72,17 +73,19 @@ class RatingsSync(object):
         """
 
         api = Webclient()
+        apim = Mobileclient()
+        apim.login(self.email, self.password)
 
         try:
             api.login(self.email, self.password)
-            xml_file = open(self.xml_file)
+            xml_file = open('self.xml_file', 'r').read()
 
             print "Parsing songs from iTunes XML file..."
             itunes_song_list = self.__get_itunes_song_list(xml_file)
             print "iTunes XML file parsing complete"
 
             print "Retrieving songs from Google Music..."
-            gmusic_song_list = self.__get_gmusic_song_list(api)
+            gmusic_song_list = self.__get_gmusic_song_list(apim)
             print "Google Music song retrieval complete"
 
             print "Computing the intersection of the song lists..."
@@ -99,20 +102,20 @@ class RatingsSync(object):
         except IOError:
             print "Error: iTunes XML file not found"
 
-    def __get_gmusic_song_list(self, api):
+    def __get_gmusic_song_list(self, apim):
         """
         Download the user's Google Music song list
         """
 
         tracks = []
 
-        for songs in api.get_all_songs(True):
+        for songs in apim.get_all_songs(True):
             tracks += songs
             print "\t", len(tracks), " songs retrieved..."
 
-        tracks = [song for song in tracks]
-
-        return sorted(tracks, key=lambda t: t['name'])
+        tracks = [title for title in tracks]
+        
+        return sorted(tracks, key=lambda t: t['title'])
 
     def __get_itunes_song_list(self, xml_file):
         """
@@ -231,7 +234,7 @@ class RatingsSync(object):
         print "\tIntersecting..."
         for gm_song in gmusic_songs:
 
-            matches = [it_song for it_song in remaining_songs if it_song['name'] == gm_song['name']]
+            matches = [it_song for it_song in remaining_songs if it_song['name'] == gm_song['title']]
 
             if len(matches) > 1:
                 matches = [it_song for it_song in matches if it_song['album'] == gm_song['album']]
@@ -264,9 +267,12 @@ class RatingsSync(object):
 
         return matched_songs
 
-    def __sync_song_ratings(self, api, songs):
+    def __sync_song_ratings(self, apim, songs):
+        apim = Mobileclient()
+        apim.login(self.email, self.password)
+
         """
         Sync ratings to Google Music
         """
 
-        api.change_song_metadata(songs)
+        apim.change_song_metadata(songs)
